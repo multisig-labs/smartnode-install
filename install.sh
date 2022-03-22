@@ -50,7 +50,7 @@ fi
 # The total number of steps in the installation process
 TOTAL_STEPS="7"
 # The Rocket Pool user data path
-RP_PATH="$HOME/.rocketpool"
+RP_PATH="$HOME/.gogopool"
 # The default smart node package version to download
 PACKAGE_VERSION="latest"
 # The default network to run Rocket Pool on
@@ -243,7 +243,7 @@ else
 fi
 
 
-# Create ~/.rocketpool dir & files
+# Create ~/.gogopool dir & files
 progress 5 "Creating Rocket Pool user data directory..."
 { mkdir -p "$RP_PATH/data/validators" || fail "Could not create the Rocket Pool user data directory."; } >&2
 { touch -a "$RP_PATH/settings.yml" || fail "Could not create the Rocket Pool user settings file."; } >&2

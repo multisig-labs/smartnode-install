@@ -22,8 +22,8 @@ ARM_PORT=""
 ARM_USER=""
 
 # The path on the arm64 machine that holds this script (e.g. if this script was run locally on that machine
-# and lived in `/srv/rocketpool` so the build artifacts went to `/srv/rocketpool/v1.0.0`, then you would set
-# this to `/srv/rocketpool`).
+# and lived in `/srv/gogopool` so the build artifacts went to `/srv/gogopool/v1.0.0`, then you would set
+# this to `/srv/gogopool`).
 ARM_PATH=""
 
 
@@ -43,15 +43,15 @@ fail() {
 
 # Builds all of the CLI binaries
 build_cli() {
-    cd smartnode/rocketpool-cli || fail "Directory ${PWD}/smartnode/rocketpool-cli does not exist or you don't have permissions to access it."
-    rm -f rocketpool-cli-*
+    cd smartnode/gogopool-cli || fail "Directory ${PWD}/smartnode/gogopool-cli does not exist or you don't have permissions to access it."
+    rm -f gogopool-cli-*
 
     echo -n "Building CLI binaries... "
     ./build.sh || fail "Error building CLI binaries."
-    mv rocketpool-cli-linux-amd64 ../../$VERSION
-    mv rocketpool-cli-darwin-amd64 ../../$VERSION
-    mv rocketpool-cli-linux-arm64 ../../$VERSION
-    mv rocketpool-cli-darwin-arm64 ../../$VERSION
+    mv gogopool-cli-linux-amd64 ../../$VERSION
+    mv gogopool-cli-darwin-amd64 ../../$VERSION
+    mv gogopool-cli-linux-arm64 ../../$VERSION
+    mv gogopool-cli-darwin-arm64 ../../$VERSION
     echo "done!"
 
     cd ../..
@@ -85,19 +85,19 @@ build_install_packages() {
 # Builds the daemon binary
 build_daemon() {
     cd smartnode || fail "Directory ${PWD}/smartnode does not exist or you don't have permissions to access it."
-    rm -f rocketpool/rocketpool-daemon-*
+    rm -f gogopool/gogopool-daemon-*
 
     if [ -z "$ARM_ADDRESS" ]; then
         echo "ARM machine address not provided, skipping retrieval of the arm64 binary."
     else
         echo -n "Retrieving arm64 binary... "
-        scp -P $ARM_PORT $ARM_USER@$ARM_ADDRESS:$ARM_PATH/$VERSION/rocketpool-daemon-linux-arm64 ../$VERSION || fail "Copying the arm64 daemon failed."
+        scp -P $ARM_PORT $ARM_USER@$ARM_ADDRESS:$ARM_PATH/$VERSION/gogopool-daemon-linux-arm64 ../$VERSION || fail "Copying the arm64 daemon failed."
         echo "done!"
     fi
 
     echo -n "Building Daemon binary... "
     ./daemon-build.sh || fail "Error building daemon binary."
-    mv rocketpool/rocketpool-daemon-* ../$VERSION
+    mv gogopool/gogopool-daemon-* ../$VERSION
     echo "done!"
 
     cd ..
@@ -109,10 +109,10 @@ build_docker_smartnode() {
     cd smartnode || fail "Directory ${PWD}/smartnode does not exist or you don't have permissions to access it."
 
     echo "Building Docker Smartnode image..."
-    docker build -t rocketpool/smartnode:$VERSION-$ARCH -f docker/rocketpool-dockerfile . || fail "Error building Docker Smartnode image."
+    docker build -t gogopool/smartnode:$VERSION-$ARCH -f docker/gogopool-dockerfile . || fail "Error building Docker Smartnode image."
     echo "done!"
     echo -n "Pushing to Docker Hub... "
-    docker push rocketpool/smartnode:$VERSION-$ARCH || fail "Error pushing Docker Smartnode image to Docker Hub."
+    docker push gogopool/smartnode:$VERSION-$ARCH || fail "Error pushing Docker Smartnode image to Docker Hub."
     echo "done!"
     
     cd ..
@@ -124,10 +124,10 @@ build_docker_pow_proxy() {
     cd smartnode || fail "Directory ${PWD}/smartnode does not exist or you don't have permissions to access it."
 
     echo "Building Docker POW Proxy image..."
-    docker build -t rocketpool/smartnode-pow-proxy:$VERSION-$ARCH -f docker/rocketpool-pow-proxy-dockerfile . || fail "Error building Docker POW Proxy image."
+    docker build -t gogopool/smartnode-pow-proxy:$VERSION-$ARCH -f docker/gogopool-pow-proxy-dockerfile . || fail "Error building Docker POW Proxy image."
     echo "done!"
     echo -n "Pushing to Docker Hub... "
-    docker push rocketpool/smartnode-pow-proxy:$VERSION-$ARCH || fail "Error pushing Docker POW Proxy image to Docker Hub."
+    docker push gogopool/smartnode-pow-proxy:$VERSION-$ARCH || fail "Error pushing Docker POW Proxy image to Docker Hub."
     echo "done!"
     
     cd ..
@@ -139,10 +139,10 @@ build_docker_prune_provision() {
     cd smartnode || fail "Directory ${PWD}/smartnode does not exist or you don't have permissions to access it."
 
     echo "Building Docker Prune Provisioner image..."
-    docker build -t rocketpool/eth1-prune-provision:$VERSION-$ARCH -f docker/rocketpool-prune-provision . || fail "Error building Docker Prune Provision image."
+    docker build -t gogopool/eth1-prune-provision:$VERSION-$ARCH -f docker/gogopool-prune-provision . || fail "Error building Docker Prune Provision image."
     echo "done!"
     echo -n "Pushing to Docker Hub... "
-    docker push rocketpool/eth1-prune-provision:$VERSION-$ARCH || fail "Error pushing Docker Prune Provision image to Docker Hub."
+    docker push gogopool/eth1-prune-provision:$VERSION-$ARCH || fail "Error pushing Docker Prune Provision image to Docker Hub."
     echo "done!"
     
     cd ..
@@ -152,14 +152,14 @@ build_docker_prune_provision() {
 # Builds the Docker Manifests and pushes them to Docker Hub
 build_docker_manifest() {
     echo -n "Building Docker manifests... "
-    rm -f ~/.docker/manifests/docker.io_rocketpool_smartnode-$VERSION
-    rm -f ~/.docker/manifests/docker.io_rocketpool_smartnode-pow-proxy-$VERSION
-    docker manifest create rocketpool/smartnode:$VERSION --amend rocketpool/smartnode:$VERSION-amd64 --amend rocketpool/smartnode:$VERSION-arm64
-    docker manifest create rocketpool/smartnode-pow-proxy:$VERSION --amend rocketpool/smartnode-pow-proxy:$VERSION-amd64 --amend rocketpool/smartnode-pow-proxy:$VERSION-arm64
+    rm -f ~/.docker/manifests/docker.io_gogopool_smartnode-$VERSION
+    rm -f ~/.docker/manifests/docker.io_gogopool_smartnode-pow-proxy-$VERSION
+    docker manifest create gogopool/smartnode:$VERSION --amend gogopool/smartnode:$VERSION-amd64 --amend gogopool/smartnode:$VERSION-arm64
+    docker manifest create gogopool/smartnode-pow-proxy:$VERSION --amend gogopool/smartnode-pow-proxy:$VERSION-amd64 --amend gogopool/smartnode-pow-proxy:$VERSION-arm64
     echo "done!"
     echo -n "Pushing to Docker Hub... "
-    docker manifest push --purge rocketpool/smartnode:$VERSION
-    docker manifest push --purge rocketpool/smartnode-pow-proxy:$VERSION
+    docker manifest push --purge gogopool/smartnode:$VERSION
+    docker manifest push --purge gogopool/smartnode-pow-proxy:$VERSION
     echo "done!"
 }
 
@@ -167,11 +167,11 @@ build_docker_manifest() {
 # Builds the Docker Manifest for the prune provisioner and pushes it to Docker Hub
 build_docker_prune_provision_manifest() {
     echo -n "Building Docker Prune Provision manifests... "
-    rm -f ~/.docker/manifests/docker.io_rocketpool_eth1-prune-provision-$VERSION
-    docker manifest create rocketpool/eth1-prune-provision:$VERSION --amend rocketpool/eth1-prune-provision:$VERSION-amd64 --amend rocketpool/eth1-prune-provision:$VERSION-arm64
+    rm -f ~/.docker/manifests/docker.io_gogopool_eth1-prune-provision-$VERSION
+    docker manifest create gogopool/eth1-prune-provision:$VERSION --amend gogopool/eth1-prune-provision:$VERSION-amd64 --amend gogopool/eth1-prune-provision:$VERSION-arm64
     echo "done!"
     echo -n "Pushing to Docker Hub... "
-    docker manifest push --purge rocketpool/eth1-prune-provision:$VERSION
+    docker manifest push --purge gogopool/eth1-prune-provision:$VERSION
     echo "done!"
 }
 
